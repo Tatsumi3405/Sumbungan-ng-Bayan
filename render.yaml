@@ -1,0 +1,46 @@
+# Render Blueprint — creates the web service + Postgres database in one go.
+services:
+  - type: web
+    name: sumbungan-ng-bayan
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: Sumbungan ng Bayan
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false            # e.g. https://sumbungan-ng-bayan.onrender.com
+      - key: APP_KEY_SEED
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: sumbungan-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SEED_ADMIN_PASSWORD
+        sync: false            # you type it in the Render dashboard (min 8 chars)
+      - key: ADMIN_EMAIL
+        value: admin@maslog.gov.ph
+
+databases:
+  - name: sumbungan-db
+    plan: free
+    databaseName: sumbungan
+    user: sumbungan
