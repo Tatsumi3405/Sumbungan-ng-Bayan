@@ -36,6 +36,7 @@ RUN set -eux; \
     fi; \
     cp -a /tmp/src/. /var/www/html/; \
     rm -rf /tmp/src /var/www/html/.env /var/www/html/docker/.keep; \
+    rm -f bootstrap/cache/*.php; \
     mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache; \
     composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist; \
     php artisan package:discover --ansi; \
