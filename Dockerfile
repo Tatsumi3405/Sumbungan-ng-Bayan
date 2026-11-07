@@ -20,6 +20,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/apache-app.conf /etc/apache2/conf-available/zz-app.conf
 RUN a2enconf zz-app
+# Send every non-file URL to Laravel's front controller. Done here (not only in
+# public/.htaccess) because GitHub's web uploader drops dot-files.
+RUN printf '<Directory /var/www/html/public>\n    FallbackResource /index.php\n</Directory>\n' > /etc/apache2/conf-available/zz-laravel-routes.conf \
+ && a2enconf zz-laravel-routes
 
 # Project files. If the repo already contains a full Laravel app (artisan
 # present) it is used as-is; otherwise a fresh Laravel skeleton is created
@@ -32,6 +36,7 @@ RUN set -eux; \
     fi; \
     cp -a /tmp/src/. /var/www/html/; \
     rm -rf /tmp/src /var/www/html/.env /var/www/html/docker/.keep; \
+    mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache; \
     composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist; \
     php artisan package:discover --ansi; \
     chown -R www-data:www-data storage bootstrap/cache; \
